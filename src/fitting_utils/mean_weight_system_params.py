@@ -58,6 +58,8 @@ for i,t in enumerate(args.best_fit_tabs):
             norbits.append(int(n))
             value -= int(n)*args.period
 
+            print("%s: mid-transit time = %f"%(t,value))
+
         try:
             if value == 0:
                 value = value_up = value_lo = np.nan
