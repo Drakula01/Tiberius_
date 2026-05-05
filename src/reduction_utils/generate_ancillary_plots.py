@@ -1,5 +1,5 @@
 #### Author of this code: James Kirk
-#### Contact: jameskirk@live.co.uk 
+#### Contact: jameskirk@live.co.uk
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -85,7 +85,7 @@ try:
 	mjd = pickle.load(open('mjd_time.pickle','rb'))[:am_cut]
 	time = mjd - int(mjd[0])
 except:
-	time = pickle.load(open('time.pickle','rb'))[:am_cut]
+	time = pickle.load(open('obs_time_array.pickle','rb'))[:am_cut]
 	time = time - int(time[0])
 
 s1 = pickle.load(open('star1_flux.pickle','rb'))[:am_cut]
@@ -111,8 +111,8 @@ try:
     nsubplots += 1
 
 except:
-    sky1 = pickle.load(open('sky_avg_star1.pickle','rb'))[:am_cut]
-    sky2 = pickle.load(open('sky_avg_star2.pickle','rb'))[:am_cut]
+    sky1 = pickle.load(open('background_avg_star1.pickle','rb'))[:am_cut]
+    sky2 = pickle.load(open('background_avg_star2.pickle','rb'))[:am_cut]
 
     sky1_left = pickle.load(open('sky_left_star1.pickle','rb'))[:am_cut]
     sky1_right = pickle.load(open('sky_right_star1.pickle','rb'))[:am_cut]
@@ -229,8 +229,8 @@ if y1 is not None:
 
 # Rotation
 ax4 = plt.subplot(gs[panel])
-ax4.plot(mjd-int(mjd[0]),rotation1,'bx')
-ax4.plot(mjd-int(mjd[0]),rotation2,'r+')
+ax4.plot(time-int(time[0]),rotation1,'bx')
+ax4.plot(time-int(time[0]),rotation2,'r+')
 ax4.set_ylabel('$X_{4600A} - X_{8900A}$\n (pixels)')
 #ax4.set_ylabel('$X(100) - X(-100)$\n (pixels)')
 lower_y4 = ax4.get_ylim()[0] - ax4.get_ylim()[0]/10.
@@ -439,7 +439,7 @@ else:
 
 
 plt.subplots_adjust(hspace=0)
-plt.xlabel('Time (MJD - %d)'%int(mjd[0]))
+plt.xlabel('Time [days]')
 
 if args.save_figure:
     plt.savefig('ancillary_plots.pdf',bbox_inches='tight')
