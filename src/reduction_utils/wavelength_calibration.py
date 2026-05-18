@@ -445,9 +445,8 @@ def compute_all_shifts_whole_spectrum(ref_frame,all_frames,all_errors,verbose=Fa
 
         x = x_ref + shift
 
-        interp = rebin_spec(x,f,x_ref)
-
         if resample:
+            interp = rebin_spec(x,f,x_ref)
             resampled_flux.append(rebin_spec(x,f,x_ref))
             resampled_error.append(rebin_spec(x,all_errors[i],x_ref))
 
