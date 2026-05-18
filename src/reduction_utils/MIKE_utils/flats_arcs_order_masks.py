@@ -86,23 +86,23 @@ def median_combine(file_list,image_type="",verbose=False):
 
 
 
-def get_order(row):
+def get_order(row,prominence=0.01,distance=10):
 
     row_smooth = gaussian_filter1d(row, sigma=2)
     row_norm = row_smooth / (np.median(row_smooth) + 1e-8)
     # invert signal to find troughs
-    troughs, _ = find_peaks(-row_norm, prominence=0.01, distance=10)
+    troughs, _ = find_peaks(-row_norm, prominence=prominence, distance=distance)
     return troughs
 
 
-def track_orders(image,max_jump_low=30, max_jump_high=10, verbose=True):
+def track_orders(image,max_jump_low=30, max_jump_high=10, verbose=True, prominence=0.01, distance=10):
 
     nrows,ncols = image.shape
 
     ref_row_idx = nrows//2
 
     # build reference array to account for the fact that the reference rows may find different numbers of orders
-    arrays = [get_order(row) for row in image[ref_row_idx-10:ref_row_idx+10]]
+    arrays = [get_order(row,prominence,distance) for row in image[ref_row_idx-10:ref_row_idx+10]]
     # Step 1: build reference (e.g., from longest array)
     ref = max(arrays, key=len)
 
