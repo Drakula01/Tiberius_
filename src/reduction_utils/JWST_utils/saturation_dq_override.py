@@ -29,7 +29,8 @@ for g in range(ngroups):
 
         if sat_mask is None:
 
-            saturated_flags = group_dq[i].sum(axis=0).astype(bool)
+            # saturated_flags = group_dq[i].sum(axis=0).astype(bool) # this includes pixels values as flagged as below the A/D floor if they have a value of zero DN or less.
+            saturated_flags = np.sum(group_dq[i] == 2,axis=0) # this includes only pixels flagged above saturation (value == 2)
 
             saturated_cols = np.sum(group_flux[i] > 0.9*65535,axis=0).astype(bool)
 
