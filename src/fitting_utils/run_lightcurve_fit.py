@@ -2,7 +2,6 @@ import sys
 import os
 import shutil
 import glob
-import Tiberius
 from global_utils import parseInput
 
 Tiberius_path = "/".join(sys.argv[0].split("/")[:-1])
