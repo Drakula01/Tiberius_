@@ -50,8 +50,8 @@ else:
 
 ld_law = str(input_dict['ld_law'])
 
-wvl_centres_list = np.array([i for i in input_dict['wvl_centres'].split(',')])
-wvl_bin_full_width_list = np.array([i for i in input_dict['wvl_bin_full_width'].split(',')])
+wvl_centres_list = np.array([i for i in input_dict['wvl_centres'].split(';')])
+wvl_bin_full_width_list = np.array([i for i in input_dict['wvl_bin_full_width'].split(';')])
 
 nlc = len(wvl_centres_list) # nlc >1 for joint fitting
 
@@ -417,6 +417,9 @@ for ilightcurve in range(nlc):
 
         return smoothed_u,smoothed_ue
 
+    os.makedirs(output_foldername, exist_ok=True)
+    os.makedirs(output_foldername + '/plots', exist_ok=True)
+    os.makedirs(output_foldername + '/tables', exist_ok=True)
     tab = open(output_foldername + '/' + 'LD_coefficients_lc{}.txt'.format(ilightcurve),'w')
     tab.write('# Teff = %d +/- %.2f K ; log(g) = %.2f +/- %.2f ; FeH = %.2f +/- %.2f ; u error inflation factor = %.1f \n'%(Teff,Teff_err,logg_star,logg_star_err,FeH,FeH_err,error_inflation))
     tab.write('# %s law used \n'%(ld_law))

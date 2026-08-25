@@ -46,7 +46,7 @@ except:
 try:    
     model_input_label_list = np.array([str(i) for i in input_dict['model_input_labels'].split(';')])
 except:
-    model_input_label_list = np.array([str(i) for i in input_dict['model_input_labels'].split(';')])
+    model_input_label_list = np.array([str(i) for i in input_dict['model_input_labels'].split(',')])
 
 try:
     poly_order_list = np.array([str(i) for i in input_dict['polynomial_orders'].split(';')])
@@ -86,7 +86,7 @@ save_plots = bool(int(input_dict['save_plots']))
 # os.makedirs(output_foldername, exist_ok=True)
 # if save_plots:
 #     os.makedirs(output_foldername + '/plots', exist_ok=True)
-# os.makedirs(output_foldername + '/pickled_objects', exist_ok=True)        
+os.makedirs(output_foldername + '/pickled_objects', exist_ok=True)        
 
 def construct_lightcurves(ilightcurve, wb):
 
