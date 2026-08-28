@@ -264,7 +264,7 @@ def bin_ancillary_data(data,wavelength_solution,bins,n_tukey_points=0):
     return np.array(binned_data)
 
 
-def wvl_bin_data(flux1,err1,flux2,err2,wvl_solution,bins,ancillary_data=None,weighted=False,n_tukey_points=0,wvl_solution_2=None):
+def wvl_bin_data(flux1,err1,flux2,err2,wvl_solution,bins,ancillary_data=None,weighted=False,n_tukey_points=0,wvl_solution_2=None, dilution_factors=None,wvl_sol_dil_fac=None):
 
     """A function to bin the spectra of the target and comparison to make spectroscopic light curves for each by summing the flux within the defined wavelength bins.
     The target's light curves are divided by the comparison's light curves to correct for telluric extinction.
@@ -281,8 +281,12 @@ def wvl_bin_data(flux1,err1,flux2,err2,wvl_solution,bins,ancillary_data=None,wei
     weighted - True/False - define whether we want to perform a weighted (by the flux errors) sum or not. Default=False as I have found this often produce better light curves (less noise)
     n_tukey_points - If wanting to use Tukey bins, set this parameter to the number of points to fall within the Tukey smoothed edges per bin.
                      This downweights those points falling at the edges of bins. I often find this to lead to noisier light curves. Default=0 (no Tukey window is used)
-     wvl_solution_2 - can pass second wavelength solution for second object if the stars have not been resampled onto the same wavelength grid
-
+    wvl_solution_2 - can pass second wavelength solution for second object if the stars have not been resampled onto the same wavelength grid
+    dilution_factors - A 1d array of correction factors used to correct flux values in case the target star is an unresolved multi-star system.(Taken as the fraction of light contributed by the companions)
+    wvl_sol_dil_fac - The dilution factors are created using stellar model spectra.This implies the resolution of dilution_factors and observed data wont be same hence a wavelength solution
+                      that properly indexes the dilution_factor array is required. This should be the wavelength solution directly
+                      extracted from the model spectra FITS file. 
+     
     Returns:
     flux_ratio - the differential (target/comparison) spectroscopic light curves
     err_ratio - the flux errors in the differential light curves
@@ -317,6 +321,25 @@ def wvl_bin_data(flux1,err1,flux2,err2,wvl_solution,bins,ancillary_data=None,wei
 
     SN_1 = []
     SN_2 = []
+
+    if (dilution_factors is None) != (wvl_sol_dil_fac is None):
+        raise RuntimeError("dilution_factors and wvl_sol_dil_fac must be provided together, or none at all")
+
+    if dilution_factors is not None and wvl_sol_dil_fac is not None:
+        if dilution_factors.shape == wvl_sol_dil_fac.shape:
+            print("Dilution factors used")
+            binned_dilution_factors = []
+            for i in range(0,nbins-1):
+                idx = (wvl_sol_dil_fac >= bins[i]) & (wvl_sol_dil_fac < bins[i+1])
+                bin_dil_vals = dilution_factors[idx]
+                binned_dilution_factors.append(np.nanmean(bin_dil_vals))
+            binned_dilution_factors = np.array(binned_dilution_factors)
+        else:
+            raise RuntimeError("Shape mismatch between dilution_factors and wvl_sol_dil_fac")
+    else:
+        binned_dilution_factors = np.zeros_like(bins)
+
+    #print("Binned Dilution Array:", binned_dilution_factors)
 
     # make wavelength solution at least 2D to allow for separate wavelength solutions for each frame
     if len(wvl_solution.shape) == 1:
@@ -360,7 +383,7 @@ def wvl_bin_data(flux1,err1,flux2,err2,wvl_solution,bins,ancillary_data=None,wei
                 idx2 = idx
                 nidx2 = nidx
 
-            if n_tukey_points != 0:
+            if n_tukey_points != 0: # Dilution factors correction not implemented in this block. 
 
                 Tukey1 = float(n_tukey_points)/nidx
                 Tukey2 = float(n_tukey_points)/nidx2
@@ -403,8 +426,8 @@ def wvl_bin_data(flux1,err1,flux2,err2,wvl_solution,bins,ancillary_data=None,wei
 
 
             else:
-                bin_1_vals = flux1[i][idx]
-                bin_e1_vals = err1[i][idx]
+                bin_1_vals = flux1[i][idx] * (1-binned_dilution_factors[j])  
+                bin_e1_vals = err1[i][idx] * (1-binned_dilution_factors[j]) 
 
                 if flux2 is not None:
                     bin_2_vals = flux2[i][idx2]
