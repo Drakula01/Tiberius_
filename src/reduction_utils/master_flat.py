@@ -17,20 +17,20 @@ parser = argparse.ArgumentParser()
 parser.add_argument('flatslist', help="""Enter list of flats file names, created through ls > flat.lis in the command line""")
 parser.add_argument('-v','--verbose',help="""Display the image of each frame before combining it.""",action='store_true')
 parser.add_argument('-b','--bias_frame',help="""Define the bias frame.""")
-parser.add_argument('-inst','--instrument',help="""Define the instrument used, either EFOSC or ACAM""")
+parser.add_argument('-inst','--instrument',help="""Define the instrument used, either EFOSC or ACAM or CAFOS""")
 parser.add_argument('-c','--clobber',help="""Need this argument to save resulting fits file, default = False""",action='store_true')
 parser.add_argument('-s','--saturation_limit',help="""Use this to exclude frames with counts above a satruation threshold. Default is 55000""",type=int,default=55000)
 args = parser.parse_args()
 
-if args.instrument != 'EFOSC' and args.instrument != 'ACAM':
-    raise NameError('Currently only set up to deal with ACAM or EFOSC data')
+if args.instrument != 'EFOSC' and args.instrument != 'ACAM' and args.instrument != 'CAFOS':
+    raise NameError('Currently only set up to deal with ACAM or EFOSC or CAFOS data')
 
 flats_files = np.loadtxt(args.flatslist,str)
 
 master_bias_data = fits.open(args.bias_frame)[0].data
 
 # Find how many windows we're dealing with
-if args.instrument == 'EFOSC':
+if args.instrument == 'EFOSC' or args.instrument == 'CAFOS':
     nwin = 1
 
 if args.instrument == 'ACAM':
@@ -53,7 +53,7 @@ def combine_flats_1window(flats_list,master_bias,instrument,sat_limit,verbose=Fa
 
         if instrument == 'ACAM':
             data_frame = i[1].data
-        if instrument == 'EFOSC':
+        if instrument == 'EFOSC' or instrument == 'CAFOS':
             data_frame = i[0].data
 
         print('File = ',f,'; Mean = ',np.mean(data_frame),'; Shape = ',np.shape(data_frame), 'Max count = ',np.max(data_frame[:,20:-20])) # Need to clip extreme edges which can have very high counts
@@ -281,7 +281,7 @@ def gaussian_smooth(flat_data,name,nwindows,inst,clobber):
 
     if inst == 'ACAM':
         sigma = 1
-    if inst == 'EFOSC':
+    if inst == 'EFOSC' or inst == 'CAFOS':
         sigma = 0.4 # this is found through inspection by eye
 
     if nwindows > 1:

@@ -12,13 +12,13 @@ plt.rcParams['image.origin'] = 'lower'
 parser = argparse.ArgumentParser()
 parser.add_argument('biaslist', help="""Enter list of bias file names, created through ls > bias.lis in the command line""")
 parser.add_argument('-v','--verbose',help="""Display the image of each bias frame before combining it.""",action='store_true')
-parser.add_argument('-inst','--instrument',help="""MUST define which instrument we're using, either ACAM or EFOSC""")
+parser.add_argument('-inst','--instrument',help="""MUST define which instrument we're using, either ACAM or EFOSC or CAFOS""")
 parser.add_argument('-c','--clobber',help="""Need this argument to save resulting fits file, default = False""",action='store_true')
 parser.add_argument('-e','--eyeball',help="""Use this argument to specify whether bias frames are to be eyeballed - sorting into good and bad frames.""",action='store_true')
 args = parser.parse_args()
 
-if args.instrument != 'EFOSC' and args.instrument != 'ACAM':
-    raise NameError('Currently only set up to deal with ACAM or EFOSC data')
+if args.instrument != 'EFOSC' and args.instrument != 'ACAM' and args.instrument != 'CAFOS':
+    raise NameError('Currently only set up to deal with ACAM or EFOSC or CAFOS data')
 
 
 # Find how many windows we're dealing with
@@ -30,6 +30,8 @@ if args.instrument == 'ACAM':
     test = fits.open(test_file)
     nwin = len(test) - 1
 
+if args.instrument == 'CAFOS':
+    nwin = 1
 
 
 def combine_biases_1window(bias_list,instrument,verbose=False,eyeball=False):
@@ -52,6 +54,8 @@ def combine_biases_1window(bias_list,instrument,verbose=False,eyeball=False):
         if instrument == 'ACAM':
             data_frame = i[1].data
         if instrument == 'EFOSC':
+            data_frame = i[0].data
+        if instrument == 'CAFOS':
             data_frame = i[0].data
 
         print('File #%d/%d ; %s ; Mean = %.1f ; Variance = %.1f ; var/mean = %.2f'%(n,len(bias_files)-1,f[-12:],np.mean(data_frame),np.var(data_frame),np.var(data_frame)/np.mean(data_frame)))
@@ -102,7 +106,7 @@ def combine_biases_1window(bias_list,instrument,verbose=False,eyeball=False):
         bad_list.close()
 
         raise SystemExit()
-
+    
     bias_data = np.array(bias_data)
 
     median_combine = np.median(bias_data,axis=0)
