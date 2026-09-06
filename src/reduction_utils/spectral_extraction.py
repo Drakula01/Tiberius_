@@ -358,6 +358,13 @@ def extract_trace_flux(frame,trace,aperture_width,background_offset,background_w
         buffer_pixels = 65*oversampling_factor # if using whole window to estimate background
         dark_current = 7. # electrons per pixel per hour
 
+    elif instrument == 'CAFOS':
+            D = 220
+            h = 2168
+            gain = 1.45
+            readnoise = 7.4
+            buffer_pixels = 0
+            dark_current = 0 # electrons per pixel per hour
 
     elif instrument == 'Keck/NIRSPEC':
         D = 1000.
@@ -388,7 +395,7 @@ def extract_trace_flux(frame,trace,aperture_width,background_offset,background_w
 
     else:
         # raise Warning('No readnoise or gain being loaded')
-        raise NameError('Currently only set up for ACAM, EFOSC, Keck/NIRSPEC and JWST')
+        raise NameError('Currently only set up for ACAM, EFOSC, Keck/NIRSPEC, CAFOS and JWST')
 
     if rectify_frame:
         ## Use the below to spatially rectify a frame (i.e. correct the curvature of a spectrum). Note this works but the difference in the resulting spectra is < negligible.
@@ -428,7 +435,7 @@ def extract_trace_flux(frame,trace,aperture_width,background_offset,background_w
 
 
     # Convert from ADU to electrons (multiply by the gain)
-    if "JWST" in instrument: # for JWST, this involves conerting from DN/s to e-
+    if "JWST" in instrument: # for JWST, this involves converting from DN/s to e-
         frame = frame*exposure_time*gain
         error_frame = error_frame*exposure_time*gain
         pre_flat_frame = pre_flat_frame*exposure_time*gain # but we want to preserve a copy of the frame prior to flat field correction for error calculation
@@ -1050,6 +1057,13 @@ def extract_all_frame_fluxes(science_list,master_bias,master_flat,trace_dict,win
                     exposure_time = fits_file[0].header['EXPTIME']
                     exposure_time_array.append(exposure_time)
                     am = fits_file[0].header['HIERARCH ESO TEL AIRM START']
+                    airmass.append(am)
+
+                elif instrument == "CAFOS":
+                    obs_time_array.append(fits_file[0].header['MJD-OBS'])
+                    exposure_time = fits_file[0].header['EXPTIME']
+                    exposure_time_array.append(exposure_time)
+                    am = fits_file[0].header['AIRMASS']
                     airmass.append(am)
 
                 elif "JWST" in instrument:
